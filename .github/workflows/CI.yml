@@ -1,0 +1,27 @@
+name: CI
+on: [push]
+jobs:
+  test_mon_prog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run mytest
+        run:
+          pip install pytest
+          pytest
+      - name: build docker image
+        run:
+          docker build -t win_test .
+      - name: run docker image 
+        run: 
+          docker run win_test
+      - name: docker login 
+        env:
+            DOCKER_USER: ${{secrets.DOCKER_USERNAME}}
+            DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: docker tag
+        run: docker tag win_test:latest khaldoune/win_image:tagname
+      - name: docker push
+        run: docker push khaldoune/win_image:tagname
+
